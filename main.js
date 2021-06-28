@@ -16,12 +16,53 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 
 camera.position.set(0, 20,0);
 
+///////////// RAY CASTING SECTION
+
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+
+const onMouseMove = ( event ) => {
+
+	// calculate mouse position in normalized device coordinates
+	// (-1 to +1) for both components
+
+	mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+	mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
+}
+const selectPeices = () => {
+  
+  raycaster.setFromCamera( mouse, camera );
+
+	// calculate objects intersecting the picking ray
+	const intersects = raycaster.intersectObjects( scene.children );
+
+	for ( let i = 0; i < intersects.length; i ++ ) {
+    intersects[ i ].object.material.transparent = true;
+		intersects[ i ].object.material.opacity = .5;
+
+	}
+
+}
+
+const leavePeices = () => {
+  for ( let i = 0; i < scene.children.length; i ++ ) {
+    if(scene.children[i].material) {
+      scene.children[i].material.opacity = 1.0;
+    }
+
+	}
+}
+window.addEventListener( 'mousemove', onMouseMove, false );
+
 ///////////// Game Board ( not including the small squares )
-const gameBoard = new THREE.BoxGeometry(17, .2, 17);
+const gameBoard = new THREE.Group;
+const boardOutline = new THREE.BoxGeometry(17, .2, 17);
 const yellow = new THREE.MeshBasicMaterial({color: 0xb2b500});
-const theBoard = new THREE.Mesh(gameBoard, yellow)
+const theBoard = new THREE.Mesh(boardOutline, yellow)
 theBoard.position.set(0,0,0)
-scene.add(theBoard)
+gameBoard.add(theBoard)
+
 
 /////////////Squares on the board
 const smallSquares = new THREE.BoxGeometry(1.8, .5, 1.8);
@@ -35,26 +76,37 @@ for( let j = 0; j < 8; j++){
     const newBlack = new THREE.Mesh(smallSquares, blackSquareMaterial);
     j%2 === 1? newRed.position.set(-4*i + 5 ,0,-2*j+7) : newRed.position.set(-4*i +7,0,-2*j+7)
     j%2 === 0? newBlack.position.set(-4*i +5 ,0,-2*j+7) : newBlack.position.set(-4*i +7,0,-2*j+7)
-    scene.add(newBlack, newRed)
+    gameBoard.add(newBlack, newRed)
   }
 }
+scene.add(gameBoard)
 
 ////// This puts the peices on the board
-// const peices = new THREE.CylinderGeometry(.6, .6, 1, 30);
-// const circMat = new THREE.MeshBasicMaterial({color: 0xffffff})
-// const thePeices = new THREE.Mesh(peices, circMat)
-// thePeices.position.set( 0, 0 , 0)
-// scene.add(thePeices)
+for( let i = 0; i < 8; i++) {
+  for (let j = 0; j < 3; j++){
+
+    const peices = new THREE.CylinderGeometry(.6, .6, 1, 30);
+    const circMat = new THREE.MeshBasicMaterial( i < 4 ? {color: 0xffffff} : {color: 0xf32f43})
+    const thePeices = new THREE.Mesh(peices, circMat)
+    i <4 || i > 7 ?  
+    j%2 === 1? thePeices.position.set( 4*i - 7, 0, 2*j -7) : thePeices.position.set(4*i - 5, 0, 2* j - 7)
+    :
+    j%2 === 0? thePeices.position.set( 4*i - 23, 0, 2*j + 3) : thePeices.position.set(4*i -21, 0, 2* j +3)
+    
+
+    scene.add(thePeices)
+  }
+}
 
 
 
 
 ////// This just shows the center of the board
-const center = new THREE.CylinderGeometry(.6, .6, 1, 30);
-const circMat = new THREE.MeshBasicMaterial({color: 0xffffff})
-const theCenter = new THREE.Mesh(center, circMat)
-theCenter.position.set( 0, 0 , 0)
-scene.add(theCenter)
+// const center = new THREE.CylinderGeometry(.6, .6, 1, 30);
+// const circMat = new THREE.MeshBasicMaterial({color: 0xffffff})
+// const theCenter = new THREE.Mesh(center, circMat)
+// theCenter.position.set( 0, 0 , 0)
+// scene.add(theCenter)
 
 
 //////// adds a light source 
@@ -68,11 +120,11 @@ const controls = new OrbitControls(camera, renderer.domElement);
 
 ///// recursive function to keep updating the camera and render the images
 function animate () {
-  requestAnimationFrame(animate)
-
 
   controls.update();
-
+  leavePeices();
+  selectPeices();
   renderer.render(scene, camera)
+  requestAnimationFrame(animate)
 }
 animate();
