@@ -32,20 +32,38 @@ const redSquareMaterial = new THREE.MeshBasicMaterial({color: 0x870900});
 const blackSquareMaterial = new THREE.MeshBasicMaterial({color: 0x151515});
 
 ///////// Positions the squares on the board and places it on the board
-for( let j = 0; j < 8; j++){
-  for( let i = 0; i < 4; i++ ){
-    const newRed = new THREE.Mesh(smallSquares, redSquareMaterial);
-    const newBlack = new THREE.Mesh(smallSquares, blackSquareMaterial);
-    j%2 === 1? newRed.position.set(-4*i + 5 ,0,-2*j+7) : newRed.position.set(-4*i +7,0,-2*j+7)
-    j%2 === 0? newBlack.position.set(-4*i +5 ,0,-2*j+7) : newBlack.position.set(-4*i +7,0,-2*j+7)
-    gameBoard.add(newBlack, newRed)
+
+for( let i  = 0; i  < 8; i ++){
+  for( let j= 0; j< 8; j++ ){
+
+    const newSquare = new THREE.Mesh(smallSquares, i % 2 === 0 && j % 2 === 1  || i % 2 === 1 && j % 2 === 0? redSquareMaterial : blackSquareMaterial);
+    i % 2 === 1 ? newSquare.position.set(-2 * j + 7 , 0, -2 * i + 7) : newSquare.position.set(-2 * j + 7, 0, -2 * i + 7)
+    // i % 2 === 0? newSquare.position.set(-2 * j + 5 , 0, -2 * i + 7) : newSquare.position.set(-2 * j + 7, 0, -2 * i + 7)
+    console.log( i + "" + j )
+    gameBoard.add(newSquare)
+    // gameBoard.add(newRed)
   }
 }
 scene.add(gameBoard)
 
+
+// for( let i  = 0; i  < 8; i ++){
+//   for( let j= 0; j< 4; j++ ){
+
+//     const newRed = new THREE.Mesh(smallSquares, redSquareMaterial);
+//     const newBlack = new THREE.Mesh(smallSquares, blackSquareMaterial);
+//     i %2 === 1? newRed.position.set(-4 * j + 5 , 0, -2 * i + 7) : newRed.position.set(-4 * j + 7, 0, -2 * i + 7)
+//     i %2 === 0? newBlack.position.set(-4 * j + 5 , 0, -2 * i + 7) : newBlack.position.set(-4 * j + 7, 0, -2 * i + 7)
+//     console.log( i + "" + j )
+//     gameBoard.add(newBlack)
+//     gameBoard.add(newRed)
+//   }
+// }
+// scene.add(gameBoard)
+
 ////// This puts the peices on the board
 for( let i = 0; i < 8; i++) {
-  for (let j = 0; j < 3; j++){
+  for (let j = 0; j < 3;  j++){
 
     const peices = new THREE.CylinderGeometry(.6, .6, 1, 30);
     const circMat = new THREE.MeshStandardMaterial( i < 4 ? {color: 0xffffff} : {color: 0xf32f43})
@@ -127,7 +145,7 @@ const leavePeices = (event) => {
 }
 const onMouseClick = (event) => {
   raycaster.setFromCamera( mouse, camera );
-	const intersects = raycaster.intersectObjects( scene.children );
+	let intersects = raycaster.intersectObjects( scene.children );
 
   if(intersects.length > 0){
     selectedPeice = intersects[0].object.userData.currentSquare;
@@ -135,9 +153,9 @@ const onMouseClick = (event) => {
   }
   // if( selectedPeice) {
   //   raycaster.setFromCamera(mouse, camera);
-  //   raycaster.intersectObjects(board.children);
+  //   intersects = raycaster.intersectObjects(board.children);
 
-  //   if( intersects.length = 0 )
+  //   if( intersects.length > 0 && intersects[0].object.userData. )
   // }
 }
 window.addEventListener( 'mousemove', onMouseMove, false );
