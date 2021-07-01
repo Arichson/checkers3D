@@ -35,31 +35,14 @@ const blackSquareMaterial = new THREE.MeshBasicMaterial({color: 0x151515});
 
 for( let i  = 0; i  < 8; i ++){
   for( let j= 0; j< 8; j++ ){
-
-    const newSquare = new THREE.Mesh(smallSquares, i % 2 === 0 && j % 2 === 1  || i % 2 === 1 && j % 2 === 0? redSquareMaterial : blackSquareMaterial);
+    const newSquare = new THREE.Mesh(smallSquares, i % 2 === 0 && j % 2 === 1  || i % 2 === 1 && j % 2 === 0? blackSquareMaterial : redSquareMaterial );
     i % 2 === 1 ? newSquare.position.set(-2 * j + 7 , 0, -2 * i + 7) : newSquare.position.set(-2 * j + 7, 0, -2 * i + 7)
-    // i % 2 === 0? newSquare.position.set(-2 * j + 5 , 0, -2 * i + 7) : newSquare.position.set(-2 * j + 7, 0, -2 * i + 7)
-    console.log( i + "" + j )
+    newSquare.userData.squareNumber = i + "" + j
     gameBoard.add(newSquare)
-    // gameBoard.add(newRed)
+    // console.log( newSquare)
   }
 }
 scene.add(gameBoard)
-
-
-// for( let i  = 0; i  < 8; i ++){
-//   for( let j= 0; j< 4; j++ ){
-
-//     const newRed = new THREE.Mesh(smallSquares, redSquareMaterial);
-//     const newBlack = new THREE.Mesh(smallSquares, blackSquareMaterial);
-//     i %2 === 1? newRed.position.set(-4 * j + 5 , 0, -2 * i + 7) : newRed.position.set(-4 * j + 7, 0, -2 * i + 7)
-//     i %2 === 0? newBlack.position.set(-4 * j + 5 , 0, -2 * i + 7) : newBlack.position.set(-4 * j + 7, 0, -2 * i + 7)
-//     console.log( i + "" + j )
-//     gameBoard.add(newBlack)
-//     gameBoard.add(newRed)
-//   }
-// }
-// scene.add(gameBoard)
 
 ////// This puts the peices on the board
 for( let i = 0; i < 8; i++) {
@@ -68,13 +51,6 @@ for( let i = 0; i < 8; i++) {
     const peices = new THREE.CylinderGeometry(.6, .6, 1, 30);
     const circMat = new THREE.MeshStandardMaterial( i < 4 ? {color: 0xffffff} : {color: 0xf32f43})
     const thePeices = new THREE.Mesh(peices, circMat)
-    // i <4 || i > 7 
-    // ?  
-    // thePeices.userData.currentSquare = i +j &&
-    // j%2 === 1? thePeices.position.set( 4*i - 7, 0, 2*j -7) : thePeices.position.set(4*i - 5, 0, 2* j - 7)
-    // :
-    // thePeices.userData.currentSquare = i +j &&
-    // j%2 === 0? thePeices.position.set( 4*i - 23, 0, 2*j + 3) : thePeices.position.set(4*i -21, 0, 2* j +3)
     
     if(i <4 || i > 7 ) {
       thePeices.userData.owner = "player one"
@@ -83,11 +59,18 @@ for( let i = 0; i < 8; i++) {
       thePeices.userData.owner = "player two"
       thePeices.userData.currentSquare = i +j && j%2 === 0? thePeices.position.set( 4*i - 23, 0, 2*j + 3) : thePeices.position.set(4*i -21, 0, 2* j +3)
     } 
-    
-    console.log( i + j)
-
     scene.add(thePeices)
   }
+}
+
+const possibleMoves = (square) => {
+  console.log(square.position)
+  const newPosition = {
+    x: square.position.x + 2,
+    y: 0,
+    z: square.position.z + 2,
+  }
+  return( newPosition)
 }
 
 ////// This just shows the center of the board
@@ -151,12 +134,31 @@ const onMouseClick = (event) => {
     selectedPeice = intersects[0].object.userData.currentSquare;
     // console.log(intersects[0].object.material.color = {r:0, g: 0, b: 99})
   }
-  // if( selectedPeice) {
-  //   raycaster.setFromCamera(mouse, camera);
-  //   intersects = raycaster.intersectObjects(board.children);
+  if( selectedPeice ) {
+    raycaster.setFromCamera(mouse, camera);
+    intersects = raycaster.intersectObjects(gameBoard.children);
 
-  //   if( intersects.length > 0 && intersects[0].object.userData. )
-  // }
+    if( intersects.length > 0 && intersects[0].object.userData.squareNumber ){
+      const targetSquare = intersects[0].object;
+      const selectedObject = scene.children.find(child => {
+        // console.log(child.userData.currentSquare)
+        // console.log(selectedPeice)
+        if(child.userData.currentSquare == selectedPeice){
+          // console.log(child)
+          return child
+        }
+      })
+      console.log(selectedObject)
+      // console.log(scene.children)
+      // if(!selectedObject || !targetSquare) return;
+      const targetPosition = possibleMoves(targetSquare);
+      selectedObject.position.set(targetPosition.x, 0, targetPosition.z)
+      selectedObject.currentSquare = targetSquare.userData.currentSquare;
+  
+      selectedPeice = null;
+    }
+
+  }
 }
 window.addEventListener( 'mousemove', onMouseMove, false );
 window.addEventListener( 'click', onMouseClick)
